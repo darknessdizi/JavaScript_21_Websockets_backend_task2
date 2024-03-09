@@ -35,13 +35,13 @@ function createInstance(ws, obj) {
     }
   }));
 
-  setTimeout(() => { // <- создаём инстанс только через 20 секунд
+  setTimeout(() => {
     const instance = dataBase.add(id);
     ws.send(JSON.stringify({
       status: `Created`,
       data: instance,
     }));
-  }, 4000);
+  }, 20000);
 }
 
 function deleteInstance(ws, obj) {
@@ -55,16 +55,37 @@ function deleteInstance(ws, obj) {
     }
   }));
 
-  setTimeout(() => { // <- создаём инстанс только через 20 секунд
+  setTimeout(() => {
     dataBase.del(obj.id);
     ws.send(JSON.stringify({
-      status: `Deleted`,
+      status: `Removed`,
       data: {
         id: obj.id,
         time: Date.now(),
       },
     }));
-  }, 4000);
+  }, 10000);
+}
+
+function changeInstance(ws, obj) {
+  // Запуск (останов) instance
+  ws.send(JSON.stringify({ 
+    status: `Received`, 
+    data: {
+      id: obj.id,
+      command: obj.command,
+      time: Date.now(),
+    }
+  }));
+
+  setTimeout(() => {
+    const instance = dataBase.change(obj.id, obj.command);
+    const status = instance.state === 'Stopped' ? 'Stopped' : `Started`;
+    ws.send(JSON.stringify({
+      status,
+      data: instance,
+    }));
+  }, 5000);
 }
 
 wsServer.on('connection', (ws) => { // ws и есть сам клиент
@@ -77,6 +98,9 @@ wsServer.on('connection', (ws) => { // ws и есть сам клиент
     }
     if (obj.command === 'Delete command') {
       deleteInstance(ws, obj);
+    }
+    if ((obj.command === 'Start command') || (obj.command === 'Pause command')) {
+      changeInstance(ws, obj);
     }
   });
 
