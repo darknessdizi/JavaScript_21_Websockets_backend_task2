@@ -23,29 +23,60 @@ const wsServer = new WS.Server({
   server
 });
 
+function createInstance(ws, obj) {
+  // Создание instance
+  const id = uuid.v4();
+  ws.send(JSON.stringify({ 
+    status: `Received`, 
+    data: {
+      id,
+      command: obj.command,
+      time: Date.now(),
+    }
+  }));
+
+  setTimeout(() => { // <- создаём инстанс только через 20 секунд
+    const instance = dataBase.add(id);
+    ws.send(JSON.stringify({
+      status: `Created`,
+      data: instance,
+    }));
+  }, 4000);
+}
+
+function deleteInstance(ws, obj) {
+  // Удаление instance
+  ws.send(JSON.stringify({ 
+    status: `Received`, 
+    data: {
+      id: obj.id,
+      command: obj.command,
+      time: Date.now(),
+    }
+  }));
+
+  setTimeout(() => { // <- создаём инстанс только через 20 секунд
+    dataBase.del(obj.id);
+    ws.send(JSON.stringify({
+      status: `Deleted`,
+      data: {
+        id: obj.id,
+        time: Date.now(),
+      },
+    }));
+  }, 4000);
+}
+
 wsServer.on('connection', (ws) => { // ws и есть сам клиент
   console.log('Соединение с клиентом');
 
   ws.on('message', (body) => {
     const obj = JSON.parse(body);
     if (obj.command === 'Create command') {
-      const id = uuid.v4();
-      ws.send(JSON.stringify({ 
-        status: `Received`, 
-        data: {
-          id,
-          command: obj.command,
-          time: Date.now(),
-        }
-      }));
-  
-      setTimeout(() => { // <- создаём инстанс только через 20 секунд
-        const instance = dataBase.add(id);
-        ws.send(JSON.stringify({
-          status: `Created`,
-          data: instance,
-        }));
-      }, 4000);
+      createInstance(ws, obj);
+    }
+    if (obj.command === 'Delete command') {
+      deleteInstance(ws, obj);
     }
   });
 

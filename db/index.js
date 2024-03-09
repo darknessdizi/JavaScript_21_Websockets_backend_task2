@@ -13,6 +13,11 @@ const dataBase = {
     this.instances.push(obj);
     return obj;
   },
+
+  del(id) {
+    const index = this.instances.findIndex((item) => item.id === id);
+    this.instances.splice(index, 1);
+  }
 };
 
 module.exports = dataBase;

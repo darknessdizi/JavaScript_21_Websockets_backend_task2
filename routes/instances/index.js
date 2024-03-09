@@ -1,6 +1,4 @@
 const Router = require('koa-router');
-const uuid = require('uuid');
-const { streamEvents } = require('http-event-stream');
 const dataBase = require('../../db');
 
 const router = new Router(); // создали роутер
