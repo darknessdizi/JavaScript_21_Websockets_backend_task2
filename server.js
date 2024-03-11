@@ -23,18 +23,8 @@ const wsServer = new WS.Server({
   server
 });
 
-function createInstance(ws, obj) {
+function createInstance(ws, id) {
   // Создание instance
-  const id = uuid.v4();
-  ws.send(JSON.stringify({ 
-    status: `Received`, 
-    data: {
-      id,
-      command: obj.command,
-      time: Date.now(),
-    }
-  }));
-
   setTimeout(() => {
     const instance = dataBase.add(id);
     ws.send(JSON.stringify({
@@ -46,15 +36,6 @@ function createInstance(ws, obj) {
 
 function deleteInstance(ws, obj) {
   // Удаление instance
-  ws.send(JSON.stringify({ 
-    status: `Received`, 
-    data: {
-      id: obj.id,
-      command: obj.command,
-      time: Date.now(),
-    }
-  }));
-
   setTimeout(() => {
     dataBase.del(obj.id);
     ws.send(JSON.stringify({
@@ -69,22 +50,15 @@ function deleteInstance(ws, obj) {
 
 function changeInstance(ws, obj) {
   // Запуск (останов) instance
-  ws.send(JSON.stringify({ 
-    status: `Received`, 
-    data: {
-      id: obj.id,
-      command: obj.command,
-      time: Date.now(),
-    }
-  }));
-
   setTimeout(() => {
     const instance = dataBase.change(obj.id, obj.command);
-    const status = instance.state === 'Stopped' ? 'Stopped' : `Started`;
-    ws.send(JSON.stringify({
-      status,
-      data: instance,
-    }));
+    if (instance) {
+      const status = instance.state === 'Stopped' ? 'Stopped' : `Started`;
+      ws.send(JSON.stringify({
+        status,
+        data: instance,
+      }));
+    }
   }, 5000);
 }
 
@@ -93,8 +67,10 @@ wsServer.on('connection', (ws) => { // ws и есть сам клиент
 
   ws.on('message', (body) => {
     const obj = JSON.parse(body);
+    let id = null;
     if (obj.command === 'Create command') {
-      createInstance(ws, obj);
+      id = uuid.v4();
+      createInstance(ws, id);
     }
     if (obj.command === 'Delete command') {
       deleteInstance(ws, obj);
@@ -102,6 +78,17 @@ wsServer.on('connection', (ws) => { // ws и есть сам клиент
     if ((obj.command === 'Start command') || (obj.command === 'Pause command')) {
       changeInstance(ws, obj);
     }
+    if (id === null) {
+      id = obj.id;
+    }
+    ws.send(JSON.stringify({ 
+      status: `Received`, 
+      data: {
+        id,
+        command: obj.command,
+        time: Date.now(),
+      }
+    }));
   });
 
   ws.on('close', (number) => {

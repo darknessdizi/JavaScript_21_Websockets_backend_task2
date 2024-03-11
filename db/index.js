@@ -22,9 +22,12 @@ const dataBase = {
   change(id, command) {
     const state = command.includes('Pause') ? 'Stopped' : 'Running';
     const index = this.instances.findIndex((item) => item.id === id);
-    this.instances[index].state = state;
-    this.instances[index].time = Date.now();
-    return this.instances[index];
+    if (index !== -1) {
+      this.instances[index].state = state;
+      this.instances[index].time = Date.now();
+      return this.instances[index];
+    }
+    return null;
   }
 };
 
