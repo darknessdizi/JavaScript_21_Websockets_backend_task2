@@ -1,5 +1,15 @@
 # Домашнее задание к занятию "8. EventSource, Websockets"
 
+## Fronted
+
+Ссылка на git-hub репозиторий (fronted): https://github.com/darknessdizi/JavaScript_21_Websockets_fronted_task2.git
+
+Ссылка на страницу: https://darknessdizi.github.io/JavaScript_21_Websockets_fronted_task2/
+
+---
+
+## Backend
+
 Правила сдачи задания:
 
 1. **Важно**: в рамках этого ДЗ можно использовать любой менеджер пакетов
